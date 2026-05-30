@@ -1,0 +1,21 @@
+{
+    "name": "穿搭助手",
+    "short_name": "穿搭助手",
+    "description": "根据天气和心情，AI 智能推荐今日穿搭",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f0f2f5",
+    "theme_color": "#4f46e5",
+    "icons": [
+        {
+            "src": "/static/outfit/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/outfit/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

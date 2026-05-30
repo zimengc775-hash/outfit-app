@@ -1,0 +1,20 @@
+# venv
+venv/
+
+# API keys
+.env
+
+# media
+media/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Database
+db.sqlite3
+
+# IDE
+.vscode/
+.claude/

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>删除确认</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+        .container { max-width: 450px; margin: 100px auto; padding: 0 20px; }
+
+        .card {
+            background: white; border-radius: 12px; padding: 35px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08); text-align: center;
+        }
+        .card h1 { font-size: 20px; margin-bottom: 20px; color: #ef4444; }
+        .card p { font-size: 15px; color: #666; margin-bottom: 8px; }
+
+        .actions { margin-top: 25px; display: flex; gap: 12px; justify-content: center; }
+        .btn-confirm {
+            background: #ef4444; color: white; border: none;
+            padding: 10px 25px; border-radius: 8px; font-size: 14px; cursor: pointer;
+        }
+        .btn-cancel {
+            background: #eee; color: #555; text-decoration: none;
+            padding: 10px 25px; border-radius: 8px; font-size: 14px;
+        }
+        .btn-confirm:hover { background: #dc2626; }
+        .btn-cancel:hover { background: #ddd; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h1>⚠️ 确认删除</h1>
+            <p>确定要删除 <strong>"{{ item.clothes_name }}"</strong> 吗？</p>
+            <p style="font-size:13px; color:#999;">此操作不可撤销</p>
+
+            <div class="actions">
+                {# 只有 POST 才会触发删除，防止误操作 #}
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-confirm">确认删除</button>
+                </form>
+                <a href="{% url 'wardrobe-list' %}" class="btn-cancel">取消</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

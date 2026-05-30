@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的衣柜</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 30px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .navbar a { color: #555; text-decoration: none; margin-left: 20px; }
+
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .header h1 { font-size: 24px; }
+
+        .btn-add {
+            background: #4f46e5; color: white; padding: 10px 20px;
+            border-radius: 8px; text-decoration: none; font-size: 14px;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+
+        .card {
+            background: white; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08); transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); }
+
+        .card img {
+            width: 100%; height: 220px; object-fit: cover;
+            background: #eee;
+        }
+
+        .card-body { padding: 15px; }
+        .card-body h3 { font-size: 16px; margin-bottom: 5px; }
+        .card-body .meta { font-size: 13px; color: #888; margin-bottom: 3px; }
+
+        .card-actions { margin-top: 12px; display: flex; gap: 10px; }
+        .btn-edit, .btn-del {
+            flex: 1; text-align: center; padding: 6px 0; border-radius: 6px;
+            font-size: 13px; text-decoration: none;
+        }
+        .btn-edit { background: #eef2ff; color: #4f46e5; }
+        .btn-del { background: #fef2f2; color: #ef4444; }
+
+        .empty { text-align: center; color: #999; margin-top: 80px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <strong>👔 穿搭助手</strong>
+        <div>
+            {% if user.is_authenticated %}
+                <span>{{ user.email }}</span>
+                <a href="{% url 'home' %}">首页推荐</a>
+                <a href="{% url 'wardrobe-list' %}">我的衣柜</a>
+                <a href="{% url 'account_logout' %}">退出</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 标题 + 添加按钮 -->
+        <div class="header">
+            <h1>我的衣柜</h1>
+            <a href="{% url 'wardrobe-add' %}" class="btn-add">+ 添加衣服</a>
+        </div>
+
+        <!-- 衣服卡片网格 -->
+        {% if clothes %}
+            <div class="grid">
+                {% for item in clothes %}
+                    <div class="card">
+                        {% if item.img %}
+                            <img src="{{ item.img.url }}" alt="{{ item.clothes_name }}">
+                        {% else %}
+                            <div style="height:220px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">
+                                暂无图片
+                            </div>
+                        {% endif %}
+
+                        <div class="card-body">
+                            <h3>{{ item.clothes_name }}</h3>
+                            <div class="meta">{{ item.get_category_display }} · {{ item.color }}</div>
+                            <div class="meta">{{ item.get_thickness_display }} · {{ item.temp_min }}°C ~ {{ item.temp_max }}°C</div>
+
+                            <div class="card-actions">
+                                <a href="{% url 'wardrobe-edit' item.id %}" class="btn-edit">编辑</a>
+                                <a href="{% url 'wardrobe-delete' item.id %}" class="btn-del">删除</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty">
+                <p>🫙 衣柜还是空的</p>
+                <p style="margin-top:10px;">
+                    <a href="{% url 'wardrobe-add' %}" class="btn-add">去添加第一件衣服</a>
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

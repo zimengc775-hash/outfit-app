@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="manifest" href="/static/outfit/manifest.json">
+    <title>穿搭助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; color: #333; }
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .navbar a { color: #555; text-decoration: none; margin-left: 16px; font-size: 14px; }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+
+        /* 天气卡片 */
+        .weather-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border-radius: 16px; padding: 24px; margin-bottom: 20px;
+            text-align: center;
+        }
+        .weather-card .location { font-size: 14px; opacity: 0.8; margin-bottom: 4px; }
+        .weather-card .temp { font-size: 48px; font-weight: 700; }
+        .weather-card .desc { font-size: 16px; margin-top: 4px; }
+        .weather-card .detail { font-size: 13px; opacity: 0.7; margin-top: 8px; }
+        .weather-card.loading { opacity: 0.6; }
+
+        /* 心情选择 */
+        .section { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        .section h2 { font-size: 17px; margin-bottom: 16px; }
+        .emoji-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+        .emoji {
+            width: 48px; height: 48px; border-radius: 12px; border: 2px solid #eee;
+            font-size: 24px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; background: white; transition: all 0.15s;
+        }
+        .emoji:hover { border-color: #667eea; transform: scale(1.08); }
+        .emoji.selected { border-color: #667eea; background: #eef2ff; }
+
+        .mood-input {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px;
+            font-size: 14px; outline: none;
+        }
+        .mood-input:focus { border-color: #667eea; }
+
+        /* 推荐按钮 */
+        .btn-recommend {
+            width: 100%; padding: 16px; background: #4f46e5; color: white;
+            border: none; border-radius: 14px; font-size: 18px; cursor: pointer;
+            font-weight: 600; margin-bottom: 24px; transition: background 0.2s;
+        }
+        .btn-recommend:hover { background: #4338ca; }
+        .btn-recommend:disabled { background: #aaa; cursor: not-allowed; }
+
+        /* 推荐结果 */
+        .result-card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; display: none; }
+        .result-card h2 { font-size: 17px; margin-bottom: 16px; }
+        .outfit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .outfit-item { text-align: center; }
+        .outfit-item img {
+            width: 100%; height: 150px; object-fit: cover; border-radius: 10px;
+            background: #eee;
+        }
+        .outfit-item .label { font-size: 13px; margin-top: 6px; color: #666; }
+        .outfit-item .cat { font-size: 11px; color: #aaa; }
+
+        .explanation {
+            background: #f8f9ff; border-radius: 10px; padding: 16px;
+            font-size: 14px; line-height: 1.6; color: #555;
+        }
+
+        .spinner { text-align: center; padding: 20px; display: none; }
+        .spinner.show { display: block; }
+        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #667eea; margin: 0 3px; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <strong>👔 穿搭助手</strong>
+        <div>
+            {% if user.is_authenticated %}
+                <span style="font-size:13px;color:#888;">{{ user.email }}</span>
+                <a href="{% url 'wardrobe-list' %}">我的衣柜</a>
+                <a href="{% url 'account_logout' %}">退出</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 天气卡片 -->
+        <div class="weather-card loading" id="weather-card">
+            <div class="location" id="w-location">📍 获取位置中...</div>
+            <div class="temp" id="w-temp">--°</div>
+            <div class="desc" id="w-desc">加载中</div>
+            <div class="detail" id="w-detail"></div>
+        </div>
+
+        <!-- 心情选择 -->
+        <div class="section">
+            <h2>😊 今天心情怎么样？</h2>
+            <div class="emoji-grid" id="emoji-grid">
+                <div class="emoji" data-mood="开心">😊</div>
+                <div class="emoji" data-mood="难过">😢</div>
+                <div class="emoji" data-mood="自信">😎</div>
+                <div class="emoji" data-mood="慵懒">😴</div>
+                <div class="emoji" data-mood="活力">🏃</div>
+                <div class="emoji" data-mood="烦躁">😤</div>
+                <div class="emoji" data-mood="平静">😌</div>
+                <div class="emoji" data-mood="甜蜜">🥰</div>
+                <div class="emoji" data-mood="emo">😔</div>
+                <div class="emoji" data-mood="元气">💪</div>
+                <div class="emoji" data-mood="放松">🧘</div>
+                <div class="emoji" data-mood="浪漫">💕</div>
+            </div>
+            <input type="text" class="mood-input" id="mood-input" placeholder="或者自己写...">
+        </div>
+
+        <!-- 推荐按钮 -->
+        <button class="btn-recommend" id="btn-recommend" onclick="getRecommendation()">
+            🪄 帮我搭配
+        </button>
+
+        <!-- 加载动画 -->
+        <div class="spinner" id="spinner">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <p style="color:#888;font-size:13px;margin-top:8px;">AI 正在为你搭配...</p>
+        </div>
+
+        <!-- 推荐结果 -->
+        <div class="result-card" id="result-card">
+            <h2>✨ 今日推荐</h2>
+            <div class="outfit-grid" id="outfit-grid"></div>
+            <div class="explanation" id="explanation"></div>
+            <button class="btn-recommend" style="margin-top:16px;background:#667eea;" onclick="getRecommendation()">
+                🔄 再来一套
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 当前天气数据（全局缓存）
+        var currentWeather = null;
+        var selectedMood = '';
+        var lastRecommendedIds = [];  // 记录上一套的 ID，避免 AI 重复推荐
+
+        // === 获取天气 ===
+        function fetchWeather(lat, lng) {
+            fetch('/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRF()},
+                body: JSON.stringify({action: 'weather', lat: lat, lng: lng})
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    currentWeather = data.weather;
+                    showWeather(data.weather);
+                } else {
+                    document.getElementById('w-location').textContent = '⚠️ 天气获取失败';
+                }
+            });
+        }
+
+        function showWeather(w) {
+            document.getElementById('w-location').textContent = '📍 ' + w.city;
+            document.getElementById('w-temp').textContent = w.temp + '°';
+            document.getElementById('w-desc').textContent = w.text;
+            document.getElementById('w-detail').textContent =
+                '体感 ' + w.feels_like + '°C · 湿度 ' + w.humidity + '% · ' + w.wind_dir + w.wind_scale + '级';
+            document.getElementById('weather-card').classList.remove('loading');
+        }
+
+        // === 浏览器定位 ===
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(pos) { fetchWeather(pos.coords.latitude, pos.coords.longitude); },
+                function() { document.getElementById('w-location').textContent = '📍 请允许定位'; }
+            );
+        }
+
+        // === 心情选择 ===
+        document.getElementById('emoji-grid').onclick = function(e) {
+            if (e.target.classList.contains('emoji')) {
+                document.querySelectorAll('.emoji').forEach(el => el.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedMood = e.target.dataset.mood;
+                document.getElementById('mood-input').value = '';
+            }
+        };
+        document.getElementById('mood-input').oninput = function() {
+            selectedMood = this.value;
+            document.querySelectorAll('.emoji').forEach(el => el.classList.remove('selected'));
+        };
+
+        // === 推荐穿搭 ===
+        function getRecommendation() {
+            var mood = selectedMood || document.getElementById('mood-input').value.trim();
+            if (!mood) { alert('请先选择或输入今天的心情~'); return; }
+            if (!currentWeather) { alert('天气数据还在加载中...'); return; }
+
+            document.getElementById('btn-recommend').disabled = true;
+            document.getElementById('spinner').classList.add('show');
+            document.getElementById('result-card').style.display = 'none';
+
+            fetch('/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRF()},
+                body: JSON.stringify({action: 'recommend', mood: mood, weather: currentWeather, exclude_ids: lastRecommendedIds})
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('spinner').classList.remove('show');
+                document.getElementById('btn-recommend').disabled = false;
+
+                if (data.success) {
+                    showResult(data);
+                } else {
+                    alert(data.error || '推荐失败');
+                }
+            })
+            .catch(function() {
+                document.getElementById('spinner').classList.remove('show');
+                document.getElementById('btn-recommend').disabled = false;
+                alert('网络错误，请重试');
+            });
+        }
+
+        function showResult(data) {
+            // 记住这套的 ID，下次推荐时告诉 AI 别重复
+            lastRecommendedIds = data.items.map(function(item) { return item.id; });
+
+            var grid = document.getElementById('outfit-grid');
+            grid.innerHTML = data.items.map(function(item) {
+                var imgHtml = item.img_url
+                    ? '<img src="' + item.img_url + '" alt="' + item.name + '">'
+                    : '<div style="height:150px;background:#ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#999;">无图</div>';
+                return '<div class="outfit-item">' + imgHtml + '<div class="label">' + item.name + '</div><div class="cat">' + item.category + '</div></div>';
+            }).join('');
+
+            document.getElementById('explanation').textContent = '💬 ' + data.explanation;
+            document.getElementById('result-card').style.display = 'block';
+            document.getElementById('result-card').scrollIntoView({behavior: 'smooth'});
+        }
+
+        // === CSRF Token ===
+        function getCSRF() {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var c = cookies[i].trim();
+                if (c.startsWith('csrftoken=')) return c.substring(10);
+            }
+            return '';
+        }
+    </script>
+
+    <!-- 注册 Service Worker（PWA 离线缓存） -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/outfit/service-worker.js')
+                .then(function(reg) { console.log('SW 注册成功'); })
+                .catch(function(err) { console.log('SW 注册失败:', err); });
+        }
+    </script>
+</body>
+</html>
