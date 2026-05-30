@@ -147,7 +147,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
 
-# ===== 邮件配置（Resend REST API，免费 100 封/天，绕过 PythonAnywhere SMTP 限制） =====
-RESEND_API_KEY = config('RESEND_API_KEY', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='穿搭助手 <onboarding@resend.dev>')
-EMAIL_BACKEND = 'outfit.email_backend.ResendBackend'
+# ===== 邮件配置（开发模式——重置链接打印在日志 + 显示在页面） =====
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = '穿搭助手 <noreply@outfit.app>'
