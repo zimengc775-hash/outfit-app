@@ -33,6 +33,7 @@
         .weather-card .desc { font-size: 18px; margin-top: 4px; }
         .weather-card .detail { font-size: 13px; opacity: 0.75; margin-top: 10px; display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
         .weather-card.loading { opacity: 0.6; }
+        .weather-card { cursor: pointer; user-select: none; }
 
         /* 区块 */
         .section { background: white; border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
@@ -112,7 +113,7 @@
 
     <div class="container">
         <!-- 天气卡片 -->
-        <div class="weather-card loading" id="weather-card">
+        <div class="weather-card loading" id="weather-card" onclick="requestLocation()" title="点击重新获取天气">
             <div class="location" id="w-location">📍 获取位置中...</div>
             <div class="temp" id="w-temp">--°</div>
             <div class="desc" id="w-desc">加载中</div>
@@ -186,12 +187,25 @@
             document.getElementById('weather-card').classList.remove('loading');
         }
 
-        if (navigator.geolocation) {
+        // 请求定位（页面加载自动调用 + 点击天气卡片手动调用）
+        function requestLocation() {
+            if (!navigator.geolocation) {
+                document.getElementById('w-location').textContent = '📍 浏览器不支持定位';
+                return;
+            }
+            document.getElementById('weather-card').classList.add('loading');
+            document.getElementById('w-location').textContent = '📍 获取位置中...';
             navigator.geolocation.getCurrentPosition(
                 function(pos) { fetchWeather(pos.coords.latitude, pos.coords.longitude); },
-                function() { document.getElementById('w-location').textContent = '📍 请允许定位'; }
+                function(err) {
+                    document.getElementById('w-location').textContent = '📍 请允许定位后点击此处重试';
+                    document.getElementById('weather-card').classList.remove('loading');
+                }
             );
         }
+
+        // 页面加载时自动请求定位
+        requestLocation();
 
         document.getElementById('emoji-grid').onclick = function(e) {
             if (e.target.classList.contains('emoji')) {
