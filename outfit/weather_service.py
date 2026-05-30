@@ -52,7 +52,7 @@ def get_weather_by_location(lat, lng):
         wind_scale = _speed_to_scale(wind_speed)
 
         return {
-            "city": f"{lat:.1f}°N, {lng:.1f}°E",  # Open-Meteo 没有城市名，用坐标代替
+            "city": f"{lat:.1f}°N, {lng:.1f}°E",
             "temp": round(current["temperature_2m"]),
             "feels_like": round(current["apparent_temperature"]),
             "text": WEATHER_CODES.get(code, "未知"),
