@@ -40,7 +40,9 @@
                         onblur="this.style.borderColor='#e5e7eb'">
                 </div>
 
-                {{ redirect_field }}
+                <div style="text-align:right;margin-bottom:24px;">
+                    <a href="{% url 'account_reset_password' %}" style="color:#9ca3af;font-size:13px;text-decoration:none;font-weight:500;">忘记密码？</a>
+                </div>
 
                 <button type="submit" style="width:100%;padding:14px;background:#4f46e5;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.2s;"
                     onmouseover="this.style.background='#4338ca'"
