@@ -104,6 +104,7 @@
         <span class="brand">👔 穿搭助手</span>
         <div>
             {% if user.is_authenticated %}
+                <a href="#" id="install-btn" style="display:none;color:#4f46e5;font-weight:700;" onclick="installApp()">📲 安装App</a>
                 <span style="font-size:13px;color:#888;">{{ user.email }}</span>
                 <a href="{% url 'wardrobe-list' %}">我的衣柜</a>
                 <a href="{% url 'account_logout' %}">退出</a>
@@ -269,6 +270,36 @@
                 if (c.startsWith('csrftoken=')) return c.substring(10);
             }
             return '';
+        }
+    </script>
+
+    <!-- PWA 安装 -->
+    <script>
+        var deferredPrompt = null;
+
+        // 浏览器触发"可安装"事件时，显示安装按钮
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredPrompt = e;
+            var btn = document.getElementById('install-btn');
+            if (btn) btn.style.display = 'inline';
+        });
+
+        function installApp() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(result) {
+                if (result.outcome === 'accepted') {
+                    document.getElementById('install-btn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            });
+        }
+
+        // 如果已经以 PWA 模式打开（standalone），隐藏安装按钮
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            var btn = document.getElementById('install-btn');
+            if (btn) btn.style.display = 'none';
         }
     </script>
 
