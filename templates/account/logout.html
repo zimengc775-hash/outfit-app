@@ -1,0 +1,31 @@
+{% extends "account/base_manage.html" %}
+{% load i18n allauth account %}
+
+{% block head_title %}{% trans "退出" %}{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:20px;">
+    <div style="background:white;border-radius:20px;padding:40px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.15);text-align:center;">
+
+        <div style="font-size:56px;margin-bottom:16px;">👋</div>
+        <h1 style="font-size:22px;color:#333;margin-bottom:8px;">确定要退出吗？</h1>
+        <p style="color:#888;font-size:14px;margin-bottom:28px;">下次回来 AI 依然记得你的衣柜 ✨</p>
+
+        {% url 'account_logout' as action_url %}
+        <form method="post" action="{{ action_url }}">
+            {% csrf_token %}
+            {{ redirect_field }}
+            <button type="submit" style="width:100%;padding:14px;background:#ef4444;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px;"
+                onmouseover="this.style.background='#dc2626'"
+                onmouseout="this.style.background='#ef4444'">
+                退出登录
+            </button>
+        </form>
+
+        <a href="/" style="display:block;padding:14px;background:#f3f4f6;color:#555;border-radius:12px;text-decoration:none;font-size:16px;font-weight:500;">
+            算了，回去看看
+        </a>
+
+    </div>
+</div>
+{% endblock %}

@@ -6,60 +6,80 @@
     <title>我的衣柜</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, sans-serif; background: #f5f5f5; color: #333; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(180deg, #f0f2f5 0%, #e8eaf6 100%); color: #333; min-height: 100vh; }
 
         .navbar {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 30px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 14px 24px; background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px); box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+            position: sticky; top: 0; z-index: 100;
         }
-        .navbar a { color: #555; text-decoration: none; margin-left: 20px; }
+        .navbar .brand { font-size: 18px; font-weight: 700; color: #4f46e5; }
+        .navbar a { color: #555; text-decoration: none; margin-left: 16px; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .navbar a:hover { color: #4f46e5; }
 
-        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 24px 20px 40px; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .header h1 { font-size: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+        .header h1 { font-size: 26px; color: #1f2937; display: flex; align-items: center; gap: 10px; }
+        .header .count { background: #eef2ff; color: #4f46e5; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
 
         .btn-add {
-            background: #4f46e5; color: white; padding: 10px 20px;
-            border-radius: 8px; text-decoration: none; font-size: 14px;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: white; padding: 12px 24px; border-radius: 14px; text-decoration: none;
+            font-size: 15px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.2); transition: all 0.2s;
         }
+        .btn-add:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.3); }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; }
 
         .card {
-            background: white; border-radius: 12px; overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08); transition: transform 0.2s;
+            background: white; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04); transition: all 0.2s;
         }
-        .card:hover { transform: translateY(-2px); }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
 
         .card img {
-            width: 100%; height: 220px; object-fit: cover;
-            background: #eee;
+            width: 100%; height: 220px; object-fit: cover; background: #f3f4f6;
+        }
+        .card .no-img {
+            width: 100%; height: 220px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            display: flex; align-items: center; justify-content: center; font-size: 48px; color: #d1d5db;
         }
 
-        .card-body { padding: 15px; }
-        .card-body h3 { font-size: 16px; margin-bottom: 5px; }
-        .card-body .meta { font-size: 13px; color: #888; margin-bottom: 3px; }
+        .card-body { padding: 16px; }
+        .card-body h3 { font-size: 15px; color: #1f2937; margin-bottom: 4px; }
+        .card-body .meta { font-size: 13px; color: #9ca3af; margin-bottom: 3px; }
+        .card-body .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .card-body .tag {
+            background: #f3f4f6; color: #6b7280; padding: 2px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 500;
+        }
 
-        .card-actions { margin-top: 12px; display: flex; gap: 10px; }
+        .card-actions { display: flex; gap: 10px; padding: 0 16px 16px; }
         .btn-edit, .btn-del {
-            flex: 1; text-align: center; padding: 6px 0; border-radius: 6px;
-            font-size: 13px; text-decoration: none;
+            flex: 1; text-align: center; padding: 8px 0; border-radius: 10px;
+            font-size: 13px; text-decoration: none; font-weight: 500; transition: all 0.2s;
         }
         .btn-edit { background: #eef2ff; color: #4f46e5; }
+        .btn-edit:hover { background: #ddd6fe; }
         .btn-del { background: #fef2f2; color: #ef4444; }
+        .btn-del:hover { background: #fecaca; }
 
-        .empty { text-align: center; color: #999; margin-top: 80px; font-size: 18px; }
+        .empty { text-align: center; color: #9ca3af; margin-top: 100px; }
+        .empty .icon { font-size: 64px; margin-bottom: 16px; }
+        .empty p { font-size: 17px; margin-bottom: 20px; }
+        .empty a { display: inline-block; padding: 12px 28px; background: #4f46e5; color: white; border-radius: 14px; text-decoration: none; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <!-- 顶部导航 -->
     <nav class="navbar">
-        <strong>👔 穿搭助手</strong>
+        <span class="brand">👔 穿搭助手</span>
         <div>
             {% if user.is_authenticated %}
-                <span>{{ user.email }}</span>
+                <span style="font-size:13px;color:#888;">{{ user.email }}</span>
                 <a href="{% url 'home' %}">首页推荐</a>
                 <a href="{% url 'wardrobe-list' %}">我的衣柜</a>
                 <a href="{% url 'account_logout' %}">退出</a>
@@ -68,13 +88,11 @@
     </nav>
 
     <div class="container">
-        <!-- 标题 + 添加按钮 -->
         <div class="header">
-            <h1>我的衣柜</h1>
-            <a href="{% url 'wardrobe-add' %}" class="btn-add">+ 添加衣服</a>
+            <h1>👔 我的衣柜 <span class="count">{{ clothes|length }} 件</span></h1>
+            <a href="{% url 'wardrobe-add' %}" class="btn-add">＋ 添加衣服</a>
         </div>
 
-        <!-- 衣服卡片网格 -->
         {% if clothes %}
             <div class="grid">
                 {% for item in clothes %}
@@ -82,30 +100,30 @@
                         {% if item.img %}
                             <img src="{{ item.img.url }}" alt="{{ item.clothes_name }}">
                         {% else %}
-                            <div style="height:220px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#999;">
-                                暂无图片
-                            </div>
+                            <div class="no-img">👔</div>
                         {% endif %}
 
                         <div class="card-body">
                             <h3>{{ item.clothes_name }}</h3>
                             <div class="meta">{{ item.get_category_display }} · {{ item.color }}</div>
                             <div class="meta">{{ item.get_thickness_display }} · {{ item.temp_min }}°C ~ {{ item.temp_max }}°C</div>
-
-                            <div class="card-actions">
-                                <a href="{% url 'wardrobe-edit' item.id %}" class="btn-edit">编辑</a>
-                                <a href="{% url 'wardrobe-delete' item.id %}" class="btn-del">删除</a>
+                            <div class="tags">
+                                {% if item.style_label %}<span class="tag">{{ item.style_label }}</span>{% endif %}
                             </div>
+                        </div>
+
+                        <div class="card-actions">
+                            <a href="{% url 'wardrobe-edit' item.id %}" class="btn-edit">✏️ 编辑</a>
+                            <a href="{% url 'wardrobe-delete' item.id %}" class="btn-del">🗑 删除</a>
                         </div>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
             <div class="empty">
-                <p>🫙 衣柜还是空的</p>
-                <p style="margin-top:10px;">
-                    <a href="{% url 'wardrobe-add' %}" class="btn-add">去添加第一件衣服</a>
-                </p>
+                <div class="icon">🫙</div>
+                <p>衣柜还是空的，快去添加你的第一件衣服吧</p>
+                <a href="{% url 'wardrobe-add' %}">＋ 添加衣服</a>
             </div>
         {% endif %}
     </div>
